@@ -1,0 +1,30 @@
+{% extends "mealRatings/base.html" %}
+{% block content %}
+<h2>Your history</h2>
+
+<h3>Meals you added</h3>
+<div class="grid">
+  {% for m in my_meals %}
+  <a class="card" href="{% url 'meal_detail' m.id %}">
+    <img class="thumb" src="/static/img/{{ m.imageUrl|default:'placeholder.png' }}" alt="">
+    <div><strong>{{ m.name }}</strong></div>
+    <div class="muted">Avg {{ m.avg_rating|default:"—"|floatformat:2 }} ({{ m.votes }})</div>
+    <div class="muted">{{ m.dateAdded }}</div>
+  </a>
+  {% empty %}
+  <p class="muted">No meals yet.</p>
+  {% endfor %}
+</div>
+
+<h3>Your ratings</h3>
+<ul>
+  {% for r in my_votes %}
+    <li>
+      <a href="{% url 'meal_detail' r.meal.id %}">{{ r.meal.name }}</a> — {{ r.rating|floatformat:2 }}
+      <span class="muted">({{ r.dateOfRating }})</span>
+    </li>
+  {% empty %}
+    <p class="muted">No ratings yet.</p>
+  {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "mealRatings/base.html" %}
+{% block title %}Landing — Meal Recommender{% endblock %}
+{% block content %}
+
+<h2>Landing</h2>
+
+<form id="filters" method="get">
+  <label>Tags</label>
+  <select name="tags" id="tag-multi" multiple>
+    {% for t in tags %}
+      <option value="{{ t.name }}" {% if t.name in selected %}selected{% endif %}>{{ t.name }}</option>
+    {% endfor %}
+  </select>
+
+  {% if user.is_authenticated %}
+    <label style="margin-left:10px">
+      <input type="checkbox" name="recommended" value="1" {% if recommended_flag %}checked{% endif %}>
+      Recommended
+    </label>
+  {% endif %}
+
+  <label style="margin-left:10px">Sort</label>
+  <select name="sort" id="sort">
+    <option value="date" {% if request.GET.sort == "date" or not request.GET.sort %}selected{% endif %}>Date added</option>
+    <option value="rating" {% if request.GET.sort == "rating" %}selected{% endif %}>Avg rating</option>
+    <option value="country" {% if request.GET.sort == "country" %}selected{% endif %}>Country</option>
+  </select>
+</form>
+
+{% if none_match %}
+  <p class="muted">No meals match the current filters.</p>
+{% endif %}
+
+<div class="grid">
+  {% for m in meals %}
+    <a class="card" href="{% url 'meal_detail' m.id %}">
+      <img class="thumb" src="/static/img/{{ m.imageUrl|default:'placeholder.png' }}" alt="">
+      <h3 style="margin:8px 0">{{ m.name }}</h3>
+      <div class="muted">{{ m.countryOfOrigin }}</div>
+      <div class="muted">Avg: {{ m.avg_rating|default:"—"|floatformat:2 }} ({{ m.votes }})</div>
+    </a>
+  {% endfor %}
+</div>
+
+{% if not user.is_authenticated %}
+<hr>
+<h3>Register</h3>
+<form method="post" action="{% url 'register' %}">
+  {% csrf_token %}
+  {{ reg_form.as_p }}
+  <button type="submit">Create account</button>
+</form>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(function(){
+    $("#tag-multi").select2();
+    function submitFilters(){ $("#filters")[0].submit(); }
+    $("#tag-multi, #sort, input[name='recommended']").on("change", submitFilters);
+  });
+</script>
+{% endblock %}
